@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Mumbai Property Price Predictor</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 40px;
+        }
+        label {
+            font-weight: bold;
+        }
+        input, select {
+            width: 280px;
+            padding: 6px;
+        }
+        button {
+            padding: 8px 16px;
+            margin-top: 12px;
+        }
+    </style>
+</head>
+<body>
+
+    <h2>Mumbai Property Price Prediction</h2>
+
+    <form action="/predict" method="post">
+
+        <label>Locality</label><br>
+        <input type="text" name="locality" value="Andheri West"><br><br>
+
+        <label>Bedrooms</label><br>
+        <input type="number" name="bedrooms" value="2"><br><br>
+
+        <label>Bathrooms</label><br>
+        <input type="number" name="bathrooms" value="2"><br><br>
+
+        <label>Furnishing</label><br>
+        <select name="furnishing">
+            <option>Unfurnished</option>
+            <option selected>Semi-Furnished</option>
+            <option>Fully Furnished</option>
+        </select><br><br>
+
+        <label>Area (sqft)</label><br>
+        <input type="number" name="area_sqft" value="900"><br><br>
+
+        <label>Year</label><br>
+        <input type="number" name="year" value="2024"><br><br>
+
+        <label>Quarter (1–4)</label><br>
+        <input type="number" name="quarter" min="1" max="4" value="2"><br><br>
+
+        <label>Q-o-Q Growth (%)</label><br>
+        <input type="number" name="qoq" step="0.01" value="2.5"><br><br>
+
+        <button type="submit">Predict Price</button>
+    </form>
+
+    {% if prediction %}
+        <hr>
+        <h3>Predicted Property Price</h3>
+        <p><strong>₹ {{ prediction }}</strong></p>
+    {% endif %}
+
+</body>
+</html>
