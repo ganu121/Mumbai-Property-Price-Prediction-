@@ -2,166 +2,206 @@
 *(Take-Home Assignment: Data Understanding, EDA & FastAPI)*
 
 ---
-## Data Understanding :
-    Dataset: data\Assignment Data Scientist.xlsx
-    The dataset contains quarterly property price information across Mumbai localities.
 
-    RangeIndex: 8404 entries, 0 to 8403
-    Data columns (total 9 columns):
-    #   Column         Non-Null Count  Dtype 
-    ---  ------         --------------  ----- 
-    0   Locality       8158 non-null   object
-    1   Quarter        8152 non-null   object
-    2   Price Range    7536 non-null   object
-    3   Average Price  7536 non-null   object
-    4   Q-o-Q          6941 non-null   object
-    5   Growth Type    197 non-null    object
-    6   City           8393 non-null   object
-    7   Type           8175 non-null   object
-    8   Unnamed: 8     198 non-null    object
-    dtypes: object(9)
+## 📌 Project Overview
+This project focuses on **understanding Mumbai property price data**, performing **exploratory data analysis (EDA)**, building a **minimal machine learning model**, and exposing predictions through a **FastAPI application**.
 
-### Explain: 
-- What each column represents:
-    Locality (categorical)                  - area in mumbai city and Hydrabad city. (ex: Bhandup, Charkop Gaon etc..) 
-                                                (Droped Hydrabad city data: out of scope and had inconsistant data compared to mumbai data)
-    Quarter (categorical -> engineered)     - quarter + Year. (ex : Apr-Jun 2024)
-    Price Range (numerical > engineered)    - min-max price range per sqft. (ex: 16,266-29,066)
-    Average Price (numerical)               - Average Price per sqft in mumbai localities for the perticular quarter.
-    Q-o-Q (numerical)           - Quarter-on-quarter growth percentage
-    Growth Type (numerical)     - percentage growth (But this column data is only for Hydrabad so dropping it)
-    City (categorical)          - City name (Mumbai (and Hydrabad 204 rows which is dropped))
-    Type (categorical)          - Type of property (ex: Residential - Multi Storey Apartment)
-    Unnamed: 8 (categorical)    - only Hydrabad data regarding property type ( Dropped column )
+The goal is **clarity of data understanding and reasoning**, rather than achieving high predictive accuracy.
 
-### 1. Data Loading and Initial Inspection
-    The data was loaded using `pandas.read_excel`, and an initial inspection was performed to understand its structure and identify missing values.
-
-- Data quality issues or assumptions:
-- Missing values, duplicates, outliers :
-    ### 2. Data Cleaning and Preprocessing
-    -   **Handling Missing Values**: Rows with missing 'Average Price' and 'Price Range' were dropped. Missing 'Q-o-Q' values were imputed with the mean.
-    -   **Filtering Data**: Rows pertaining to 'Hyderabad' city were removed as the scope is limited to Mumbai. Rows with `City` being null were also dropped.
-    -   **Dropping Irrelevant Columns**: Columns such as 'Unnamed: 8', 'Growth Type', 'City', 'Type', and 'Price Range' were dropped due to irrelevance, redundant information, or lack of significant data after filtering.
-    -   **Data Type Conversion**: 'Q-o-Q' was cleaned by replacing non-numeric characters and converted to a float. 'Average Price' was converted to an integer.
-    -   **Feature Engineering**: The 'Quarter' column was separated into 'Year' (integer) and 'Quarter' (numerical representation of quarter, e.g., 1 for Jan-Mar).
-    -   **Categorical Encoding**: The 'Locality' column was converted into numerical labels using Label Encoding (`Locality_LabelEncoded`).
-
-- Numerical vs categorical features 
-    Numerical: Average Price, Q-o-Q, Year, Quarter
-    Categorical: Locality
-
-- Target variable chosen and why : 
-    'Average Price' is chosen for target variale because the model needs to predict the average price per sqft of land in mumbai locality
- 
-
-2. Exploratory Data Analysis (EDA) 
- 
-- Univariate and bivariate analysis 
-
-    #### Final Consolidated EDA Summary
-    "Univariate analysis revealed right-skewed property prices and predominantly low-to-moderate quarter-on-quarter growth, highlighting the presence of premium localities alongside stable market behavior. Bivariate analysis showed weak dependency between price levels and short-term growth, while temporal trends confirmed consistent long-term price appreciation with mild seasonal variations."
-
-    #### Key Observations:
-    -   **Distribution of Average Property Prices**: Right-skewed, with most prices between ₹15,000 - ₹30,000, and a long tail extending to ₹70,000+ (indicating premium localities).
-    -   **Distribution of Quarter-on-Quarter (Q-o-Q) Growth**: Mostly between 0% and 4%, with occasional spikes up to ~14%.
-    -   **Year-wise Data Distribution**: Increasing records from 2018 to 2023, stabilizing in 2024, indicating good temporal coverage.
-    -   **Average Price vs Q-o-Q Growth**: Widely scattered points with no clear linear pattern, suggesting growth is locality- and period-specific.
-    -   **Year-wise Average Property Price Trend**: Stable from 2018–2020, with a clear upward trend from 2021 and a sharp increase in 2023–2024.
-    -   **Quarter-wise Q-o-Q Growth Trend**: Peaks in Q2 (Apr–Jun) with slight decline in Q3 and Q4, showing mild seasonality.
-
-- Insights on locality pricing, area vs price, suspicious values 
-    #### Insights on Locality Pricing:
-    Locality plays a critical role in price determination. Premium areas command consistently higher prices, while emerging localities exhibit stronger growth momentum, indicating potential future appreciation.
-
-    #### Area (Locality) vs Price Relationship:
-    The analysis suggests that absolute price levels are locality-driven rather than growth-driven, highlighting the importance of location-specific factors over short-term market movements.
-
-    #### Suspicious / Noteworthy Values Analysis (Outliers):
-    Outliers in 'Average Price' (e.g., Malabar Hill, Napean Sea Road, Walkeshwar) represent genuine premium segments, not data anomalies. High Q-o-Q growth values (e.g., Wadala West, Pant Nagar, Grant Road) are typically in mid-priced or redevelopment areas, influenced by infrastructure or lower base prices.
-
-
-3. Minimal ML Model 
-
-- Use one model 
-
-    #### Model Used
-    -   **Linear Regression**: Chosen for its simplicity, interpretability, and suitability for continuous target variable prediction (Average Price). 
-    (for accurate predictions we need to use advanced ensemble models like random forest because locality is a catagorical column and it varies prices significantly which is not captured by linear models)
-
-- Basic preprocessing 
-
-    #### Training and Evaluation
-    -   dropping column 'Locality_LabelEncoded' because its catagorical which is bad input for linear models
-    -   **Features (X)**: 'Year', 'Quarter', 'Q-o-Q'
-    -   **Target (y)**: 'Average Price'
-    -   **Split**: Data split into 80% training and 20% testing sets (`random_state=42`).
-
-- Show one metric (R² or RMSE) 
-
-    -   **R-squared (R2)**: A measure of how well the model fits the data. The model achieved an R2 score of 0.0431. This indicates that only about 4.3% of the variance in property prices can be explained by the selected features.
-
-- Predict price or price_per_sqft :
-    input:
-    {
-        'Year': [2025, 2025, 2026],
-        'Quarter': [1, 4, 4],
-        'Q-o-Q': [0.02, 0.03, 0.025] # Example Q-o-Q growth values
-    }
-
-    output:
-    Predicted Average Prices:
-    [24717.04838386 26081.7613782  26625.98059881]
-
-
-4. Minimal FastAPI 
-Endpoint: 
-POST  `/predict`
-
-
-README Expectations 
-- Dataset understanding 
-- EDA insights 
-- Target variable 
-- Model and metric 
-- Steps to run FastAPI 
 ---
 
-## 4. FastAPI Application
+## 📊 Dataset Understanding
 
-A minimal FastAPI application is used to expose the trained model.
+- **Dataset**: `data/Assignment Data Scientist.xlsx`
+- **Description**: Quarterly property price data across multiple localities in Mumbai (with some Hyderabad records removed).
 
-### Endpoint
-**POST** `/predict`
+### Dataset Shape
+- **Total rows**: 8,404  
+- **Total columns**: 9  
+- **Data types**: All object types initially
 
-### Input (via HTML form)
-NOTE: inappropriate input suggested in assignment document. Going ahead with the suggested input + essential input fields from assignment and assuming the inputs for fields 'Year', 'Quarter', 'Q-o-Q' if not assigned manualy by the user.
-`input:` 
-- Locality
-- Bedrooms
-- Bathrooms
-- Furnishing
-- Area (sqft)  
-- Year  
-- Quarter  
-- Q-o-Q growth  
+### Original Columns
+| Column Name     | Non-Null Count | Type   |
+|-----------------|----------------|--------|
+| Locality        | 8158           | Object |
+| Quarter         | 8152           | Object |
+| Price Range     | 7536           | Object |
+| Average Price   | 7536           | Object |
+| Q-o-Q           | 6941           | Object |
+| Growth Type     | 197            | Object |
+| City            | 8393           | Object |
+| Type            | 8175           | Object |
+| Unnamed: 8      | 198            | Object |
 
+---
 
-### Output
-- Predicted property price (numeric)
+## 🧠 Column Explanation
 
-### Files
-- `eda_and_model.ipynb` → Workflow steps (data cleaning, EDA, model training)
-- `main.py` → FastAPI app  
-- `linear_regression_model.pkl` → saved model  
-- `templates/index.html` → simple webpage UI  
-- `requirements.txt` - reqired libraries
-- `README.md` - project details
+- **Locality (categorical)**  
+  Area within Mumbai city (e.g., Bhandup, Charkop Gaon).  
+  *Hyderabad localities were dropped due to scope mismatch and inconsistent patterns.*
 
-### Run Instructions
-```bash
-pip install -r requirements.txt
-uvicorn main:app --reload
-- Access in Browser:
-API → http://127.0.0.1:8000
+- **Quarter (categorical → engineered)**  
+  Quarter + Year (e.g., *Apr–Jun 2024*).
 
+- **Price Range (numerical → engineered)**  
+  Minimum–maximum price per sqft (e.g., *16,266–29,066*).
+
+- **Average Price (numerical)**  
+  Average price per sqft for a given locality and quarter.
+
+- **Q-o-Q (numerical)**  
+  Quarter-on-quarter growth percentage.
+
+- **Growth Type (numerical)**  
+  Growth percentage (only available for Hyderabad → dropped).
+
+- **City (categorical)**  
+  City name (*Mumbai retained, Hyderabad dropped*).
+
+- **Type (categorical)**  
+  Property type (e.g., *Residential – Multi Storey Apartment*).
+
+- **Unnamed: 8 (categorical)**  
+  Hyderabad-specific data → dropped.
+
+---
+
+## 🧹 Data Cleaning & Preprocessing
+
+### 1. Data Loading
+- Loaded using `pandas.read_excel`
+- Initial inspection to understand structure and missing values
+
+### 2. Cleaning Steps
+- **Missing Values**
+  - Dropped rows with missing `Average Price` and `Price Range`
+  - Imputed missing `Q-o-Q` values with the mean
+
+- **Filtering**
+  - Removed all Hyderabad city records
+  - Dropped rows where `City` was null
+
+- **Dropped Columns**
+  - `Unnamed: 8`
+  - `Growth Type`
+  - `City`
+  - `Type`
+  - `Price Range`
+
+- **Type Conversion**
+  - Cleaned `Q-o-Q` and converted to float
+  - Converted `Average Price` to integer
+
+- **Feature Engineering**
+  - Split `Quarter` into:
+    - `Year` (integer)
+    - `Quarter` (numerical: 1–4)
+
+- **Categorical Encoding**
+  - Encoded `Locality` using Label Encoding (`Locality_LabelEncoded`)
+
+---
+
+## 📌 Feature Classification
+
+- **Numerical Features**
+  - `Average Price`
+  - `Q-o-Q`
+  - `Year`
+  - `Quarter`
+
+- **Categorical Features**
+  - `Locality`
+
+---
+
+## 🎯 Target Variable
+
+- **Target**: `Average Price`  
+- **Reason**: The objective is to predict the **average price per sqft** for a given Mumbai locality and time period.
+
+---
+
+## 📈 Exploratory Data Analysis (EDA)
+
+### Summary
+> *Univariate analysis revealed right-skewed property prices and predominantly low-to-moderate quarter-on-quarter growth, highlighting the presence of premium localities alongside stable market behavior. Bivariate analysis showed weak dependency between price levels and short-term growth, while temporal trends confirmed consistent long-term price appreciation with mild seasonal variations.*
+
+### Key Observations
+- **Average Price Distribution**
+  - Right-skewed
+  - Majority between ₹15,000–₹30,000
+  - Long tail up to ₹70,000+ (premium localities)
+
+- **Q-o-Q Growth Distribution**
+  - Mostly between 0%–4%
+  - Occasional spikes up to ~14%
+
+- **Year-wise Trend**
+  - Stable prices from 2018–2020
+  - Clear upward trend from 2021 onward
+  - Sharp rise in 2023–2024
+
+- **Price vs Growth**
+  - Weak correlation
+  - Growth is locality- and period-specific
+
+- **Seasonality**
+  - Q2 (Apr–Jun) shows higher growth
+  - Mild decline in Q3 and Q4
+
+---
+
+## 🏙️ Locality-Level Insights
+
+- **Locality Pricing**
+  - Premium areas consistently command higher prices
+  - Emerging localities show stronger growth momentum
+
+- **Area vs Price**
+  - Absolute prices are driven more by locality than short-term growth
+
+- **Outliers**
+  - High-price localities (Malabar Hill, Napean Sea Road, Walkeshwar) are genuine
+  - High Q-o-Q spikes often occur in redevelopment or mid-priced areas
+
+---
+
+## 🤖 Machine Learning Model
+
+### Model Used
+- **Linear Regression**
+  - Chosen for simplicity and interpretability
+  - Suitable for continuous target prediction
+
+> *Note*: For better accuracy, ensemble models (e.g., Random Forest) would be more appropriate since locality strongly influences price and linear models fail to capture this effect.
+
+### Training Setup
+- Dropped `Locality_LabelEncoded` (categorical → poor fit for linear models)
+- **Features (X)**:
+  - `Year`
+  - `Quarter`
+  - `Q-o-Q`
+- **Target (y)**:
+  - `Average Price`
+- **Train/Test Split**:
+  - 80% / 20%
+  - `random_state = 42`
+
+### Evaluation Metric
+- **R² Score**: `0.0431`
+
+> Only ~4.3% variance explained, reinforcing that the model is intentionally minimal and explanatory.
+
+---
+
+## 🔮 Sample Prediction
+
+### Input
+```json
+{
+  "Year": [2025, 2025, 2026],
+  "Quarter": [1, 4, 4],
+  "Q-o-Q": [0.02, 0.03, 0.025]
+}
