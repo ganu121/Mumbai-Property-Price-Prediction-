@@ -205,3 +205,56 @@ The goal is **clarity of data understanding and reasoning**, rather than achievi
   "Quarter": [1, 4, 4],
   "Q-o-Q": [0.02, 0.03, 0.025]
 }
+
+### Output
+**Predicted Average Prices**
+```text
+[24717.04838386, 26081.7613782, 26625.98059881]
+
+## 4. Minimal FastAPI Application
+
+A minimal FastAPI application is used to expose the trained machine learning model for price prediction.
+
+### Endpoint
+**POST** `/predict`
+
+### Input (via HTML Form)
+
+> **Note**: The assignment document suggests some inappropriate inputs.  
+> This implementation proceeds with the suggested inputs along with essential fields from the assignment, assuming default values for `Year`, `Quarter`, and `Q-o-Q` if they are not manually provided by the user.
+
+**Input Fields:**
+- Locality
+- Bedrooms
+- Bathrooms
+- Furnishing
+- Area (sqft)
+- Year
+- Quarter
+- Q-o-Q growth
+
+### Output
+- Predicted property price (numeric)
+
+---
+
+## 📂 Files Overview
+
+- `eda_and_model.ipynb` → Workflow steps including data cleaning, EDA, and model training  
+- `main.py` → FastAPI application  
+- `linear_regression_model.pkl` → Saved trained model  
+- `templates/index.html` → Simple webpage UI  
+- `requirements.txt` → Required Python libraries  
+- `README.md` → Project documentation  
+
+---
+
+## ▶️ Run Instructions
+
+```bash
+pip install -r requirements.txt
+uvicorn main:app --reload
+
+## Access in Browser
+
+API / UI → http://127.0.0.1:8000
